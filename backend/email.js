@@ -7,7 +7,7 @@ import Imap from 'imap'
 import { simpleParser } from 'mailparser'
 import fs from 'fs'
 
-function sendEmail(subject, body) {
+export function sendEmail(to, subject, body) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -18,7 +18,7 @@ function sendEmail(subject, body) {
 
     const mailOptions = {
         from: 'snailcdn@expitau.com',
-        to: 'expitau@gmail.com',
+        to: to,
         subject: subject,
         text: body
     }
@@ -32,7 +32,7 @@ function sendEmail(subject, body) {
     });
 }
 
-async function fetchEmails() {
+export async function fetchEmails() {
     const imap = new Imap({
         user: 'snailcdn@gmail.com',
         password: process.env.GMAIL_APP_PASSWORD,
@@ -101,12 +101,12 @@ async function fetchEmails() {
 
 
 
-// sendEmail('Hello', 'Hello World')
+// sendEmail('Hello Josiah', 'Im snailcdn')
 // fetchEmails().then(emails => {
 //     emails.forEach(email => {
 //         console.log("-------------------------------------------------------------")
 //         console.log(email.from)
 //         console.log(email.subject)
-//         console.log(email.body)
+        // console.log(email.body)
 //     })
 // })

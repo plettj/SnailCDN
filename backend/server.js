@@ -1,5 +1,6 @@
 import jayson from 'jayson'
 import fs from 'fs'
+import { sendEmail, fetchEmails } from './email.js'
 
 // Read from data.json file
 function readData() {
@@ -8,8 +9,19 @@ function readData() {
         data = JSON.parse(fs.readFileSync('backend/data.json'))
     } catch (e) {
         data = {
-            requests: [],
-            content: {}
+            requests: [
+                // {
+                //     key: ['website1', 'website2'],
+                //     email: 'requestee@gmail.com',
+                //     requestedAt: '2024-07-25T00:00:00.000Z'
+                // }
+            ],
+            content: [
+                // {
+                //     key: "website1",
+                //     content: "This is the content of website1",
+                // }
+            ]
         }
         if (e.code === 'ENOENT') {
             writeData(data)
@@ -28,7 +40,7 @@ function addToQueue(request) {
 
     data.requests = Object.values(data.requests.reduce((acc, curr) => {
         // If there are multiple requests from the same email, combine them
-        acc[curr.email] ??= {key: [], email: curr.email, requestedAt: curr.requestedAt}
+        acc[curr.email] ??= { key: [], email: curr.email, requestedAt: curr.requestedAt }
         acc[curr.email].key = Array.from(new Set([...acc[curr.email].key, ...curr.key]))
         if (acc[curr.email].requestedAt > curr.requestedAt) {
             acc[curr.email].requestedAt = curr.requestedAt
@@ -38,11 +50,41 @@ function addToQueue(request) {
     writeData(data)
 }
 
-function addToContent(key, content) {
+function pollEmails() {
+    console.log("Polling...")
+    fetchEmails().then(emails => {
+        let data = readData()
+        data.content = emails.map((email) => {
+            return {
+                key: email.subject,
+                content: email.body,
+            }
+        })
+        writeData(data)
+    })
+}
+
+function sendEmails() {
+    console.log("Sending emails...")
     let data = readData()
-    data.content[key] = content
+    data.requests.forEach((request) => {
+        // If the request was made under 5 minutes ago, don't send the email
+        if (request.requestedAt + 5 * 60 * 1000 > new Date()) return
+
+        console.log(request)
+        let contents = data.content.filter((c) => request.key.includes(c.key))
+        console.log("FOUND CONTENTS", contents)
+        for (let content of contents) {
+            console.log("Sending email to", request.email)
+            sendEmail(request.email, "Your website is ready!", content.content)
+        }
+    })
+    data.requests = data.requests.filter((request) => request.requestedAt + 5 * 60 * 1000 > new Date())
     writeData(data)
 }
+
+setInterval(pollEmails, 30000)
+setInterval(sendEmails, 5000)
 
 function normalizeEmail(email) {
     return email.replace(/^\s*/g, '').replace(/\s*$/g, '')
@@ -59,21 +101,20 @@ const methods = {
         }
     },
     addRequest: (args, callback) => {
-        console.log(args)
         if (!args) {
-            callback({code: 400, message: 'Arguments are required'})
+            callback({ code: 400, message: 'Arguments are required' })
             return
         }
         if (!args[0]) {
-            callback({code: 400, message: 'Key is required'})
+            callback({ code: 400, message: 'Key is required' })
             return
         }
         if (!args[1]) {
-            callback({code: 400, message: 'Email is required'})
+            callback({ code: 400, message: 'Email is required' })
             return
         }
 
-        addToQueue({key: [args[0]], email: args[1], requestedAt: new Date()})
+        addToQueue({ key: [args[0]], email: normalizeEmail(args[1]), requestedAt: new Date() })
         callback(null, 'Request received')
     }
 }
