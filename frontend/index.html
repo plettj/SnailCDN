@@ -50,18 +50,18 @@
           <span class="material-symbols-outlined">info</span>Enter a valid email
           address
         </div>
-        <div
+        <!-- <div
           class="flex items-center w-fit gap-2 min-h-6 text-sm text-green-600"
           v-if="status == 'success'"
         >
           <span class="material-symbols-outlined">check</span>Success! Your
           website will be delivered in 5-7 business days
-        </div>
+        </div> -->
         <!-- Empty indicator for space consistency -->
         <div class="min-h-6" v-if="status == null"></div>
 
         <div
-          class="relative border border-stone-200 mt-2 mb-12 rounded bg-white w-full m-2 flex items-center"
+          class="relative border border-stone-200 mx-2 mt-2 mb-12 rounded bg-white w-full flex items-center"
         >
           <input
             class="border-none outline-none bg-transparent px-4 py-2 w-full"
@@ -71,7 +71,7 @@
             @keyup.enter="submitEmail"
           />
           <button
-            class="cursor-pointer bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center"
+            class="cursor-pointer bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white w-10 absolute top-0 right-0 bottom-0 rounded-r flex items-center justify-center"
             @click="submitEmail"
           >
             <span class="material-symbols-outlined">arrow_forward</span>
@@ -106,12 +106,13 @@
           <div class="flex-grow"></div>
           <button
             class="cursor-pointer border border-stone-200 bg-white hover:bg-stone-100 active:bg-stone-200 text-black py-2 px-4 rounded"
+            @click='goToPage("upload")'
           >
             Upload Website
           </button>
         </div>
         <input
-          class="border border-stone-200 rounded p-2 w-full"
+          class="border border-stone-200 rounded px-4 py-2 w-full"
           placeholder="Search webpages"
           v-model="searchQuery"
         />
@@ -121,12 +122,51 @@
           <div
             v-for="website in filteredWebsites"
             :key="website.id"
-            class="border p-4 rounded bg-white"
+            class="border p-4 rounded bg-white flex gap-2"
           >
-            <h3 class="font-bold">{{ website.name }}</h3>
-            <p>{{ website.description }}</p>
+            <div class="flex-grow">
+              <h3 class="font-bold">{{ website.name }}</h3>
+              <p>{{ website.description }}</p>
+            </div>
+            <button
+              class="cursor-pointer h-10 py-2 px-4 border border-stone-200 bg-white hover:bg-stone-100 active:bg-stone-200 text-black rounded"
+              @click="requestPage(website.id)"
+            >
+              Request
+            </button>
           </div>
         </div>
+      </section>
+
+      <section
+        v-if="currentView === 'upload'"
+        class="flex flex-col items-center w-screen px-2 gap-4"
+      >
+        <button
+          class="self-start cursor-pointer border border-stone-200 bg-white hover:bg-stone-100 active:bg-stone-200 text-black py-2 px-4 rounded"
+          @click='goToPage("browse")'
+        >
+          Back
+        </button>
+        <input
+          class="border border-stone-200 rounded w-full px-4 py-2 outline-none bg-transparent"
+          placeholder="Enter your website name"
+          v-model="siteName"
+        />
+        <input
+          type="file"
+          @change="onFileChanged($event)"
+          accept=".html"
+          class="border border-stone-200 rounded w-full px-4 py-2 outline-none bg-transparent mt-2"
+          capture
+        />
+        <a
+          class="cursor-pointer border border-stone-200 bg-white hover:bg-stone-100 active:bg-stone-200 text-black py-2 px-4 rounded mt-2"
+          @click="uploadWebsite()"
+          :href="`mailto:snailcdn@expitau.com?body=${siteFileBody}&subject=sneakyhash-${siteName}`"
+        >
+          Upload
+        </a>
       </section>
     </div>
 
@@ -139,6 +179,9 @@
           const status = ref(null);
           const currentView = ref("home");
           const searchQuery = ref("");
+          const siteName = ref("");
+          const siteFile = ref(null);
+          const siteFileBody = ref(null);
           const websites = ref([
             {
               id: 1,
@@ -156,7 +199,7 @@
 
           /**
            * Changes the current view to the specified page.
-           * @param {string} page = "home" | "browse"
+           * @param {string} page = "home" | "browse" | "upload"
            */
           const goToPage = (page) => {
             currentView.value = page;
@@ -178,6 +221,38 @@
             goToPage("browse");
           };
 
+          const requestPage = (id) => {
+            console.log(
+              "Requesting page with ID",
+              id,
+              "and email",
+              email.value
+            );
+            console.warn("Not implemented. Need to make RPC call.");
+          };
+
+          const uploadWebsite = () => {
+            if (!siteName.value || !siteFile.value) {
+              console.warn("Missing website name or file.");
+              return;
+            }
+            console.log(
+              "Uploading website",
+              siteName.value,
+              siteFile.value,
+              email.value
+            );
+            console.warn("Not implemented. Need to make RPC call.");
+          };
+
+          const onFileChanged = ($event) => {
+            const target = $event.target;
+            if (target && target.files) {
+              siteFile.value = target.files[0];
+              fetchWebsiteBody();
+            }
+          };
+
           const filteredWebsites = computed(() => {
             if (!searchQuery.value) {
               return websites.value;
@@ -189,15 +264,27 @@
             );
           });
 
+          const fetchWebsiteBody = () => {
+            siteFile.value.text().then((content) => {
+              siteFileBody.value = encodeURIComponent(content);
+            });
+          };
+
           return {
             email,
             status,
             submitEmail,
             currentView,
             searchQuery,
+            siteName,
+            siteFile,
+            siteFileBody,
             websites,
             filteredWebsites,
             goToPage,
+            requestPage,
+            uploadWebsite,
+            onFileChanged,
           };
         },
       }).mount("#app");
