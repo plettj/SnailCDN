@@ -31,32 +31,29 @@
       font-family: "Inter", sans-serif;
     }
 
-    /* @layer components {
-        .test {
-            @apply bg-red-500;
-        }
-    } */
+    @layer components {
+      .input-status {
+        @apply flex items-center w-fit gap-2 min-h-6 text-sm;
+      }
+      .desc-text {
+        @apply text-stone-800 max-w-xl text-center leading-6;
+      }
+    }
   </style>
 
-  <body class="flex justify-center h-screen my-0 mx-1.5">
+  <body class="flex justify-center items-center h-screen my-0 mx-1.5">
     <div id="app">
-      <section class="flex flex-col items-center mt-48">
+      <section class="flex flex-col items-center">
         <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
-        <h2 class="mb-6 xl:mb-12 text-stone-500 text-center m-0 text-2xl">
+        <h2 class="text-stone-500 text-center my-2 mb-6 text-2xl">
           The slowest content delivery network
         </h2>
 
-        <div
-          class="flex items-center w-fit gap-2 min-h-6 text-sm text-red-600"
-          v-if="status == 'invalid-email'"
-        >
+        <div class="input-status text-red-600" v-if="status == 'invalid-email'">
           <span class="material-symbols-outlined">info</span>Enter a valid email
           address
         </div>
-        <div
-          class="flex items-center w-fit gap-2 min-h-6 text-sm text-green-600"
-          v-if="status == 'success'"
-        >
+        <div class="input-status text-green-600" v-if="status == 'success'">
           <span class="material-symbols-outlined">check</span>Success! Your
           website will be delivered in 5-7 business days
         </div>
@@ -64,7 +61,7 @@
         <div class="min-h-6" v-if="status == null"></div>
 
         <div
-          class="relative border border-stone-200 rounded-md bg-white w-full m-2 flex items-center"
+          class="relative border border-stone-200 mt-2 mb-12 rounded bg-white w-full m-2 flex items-center"
         >
           <input
             class="border-none outline-none bg-transparent px-4 py-2 w-full"
@@ -72,6 +69,7 @@
             v-model="email"
             spellcheck="false"
             id="emailInput"
+            @keyup.enter="submitEmail"
           />
           <button
             class="w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
@@ -83,15 +81,18 @@
           </button>
         </div>
 
-        <p class="mt-16 max-w-xl text-center leading-6 text-stone-800">
-          Have you ever opened a webpage and had it load in under a second? It's
-          stressful. Sometimes, <b>it's better to wait</b>. <br /><br />
-          That's where SnailCDN comes in.
-          <br /><br />
-          Enter your email address above, and browse our vast collection of
-          <b>over 0 million</b> pages. When you've found one you like, we'll
-          email it to you in <b>5-7 business days</b>
-        </p>
+        <div class="flex flex-col gap-4">
+          <p class="desc-text">
+            Have you ever opened a webpage and had it load in under a second?
+            It's stressful. Sometimes, <b>it's better to wait</b>.
+          </p>
+          <p class="desc-text">That's where SnailCDN comes in.</p>
+          <p class="desc-text">
+            Enter your email address above, and browse our vast collection of
+            <b>over 0 million</b> pages. When you've found one you like, we'll
+            email it to you in <b>5-7 business days</b>
+          </p>
+        </div>
       </section>
     </div>
   </body>
