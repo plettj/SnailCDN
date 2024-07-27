@@ -11,8 +11,9 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<style>
+<style tyle="text/tailwindcss">
     .material-symbols-outlined {
         font-variation-settings:
             'FILL' 0,
@@ -27,121 +28,38 @@
         margin: 0 1.5rem;
         background-color: #fafaf9;
     }
-
-    h1 {
-        font-size: 3rem;
-        font-weight: 900;
-        margin: 0;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-        font-weight: 400;
-        color: #666666;
-        margin: 0;
-        text-align: center;
-    }
-
-    .input {
-        font-size: 1rem;
-        border: 1px solid #e7e5e4;
-        border-radius: 0.5rem;
-        background: white;
-        width: 100%;
-        margin: 0.5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .input input {
-        border: none;
-        outline: none;
-        font-size: 1rem;
-        padding: 1rem;
-        background: none;
-    }
-
-    .indicator {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        min-height: 1.5rem;
-        font-size: 0.8rem;
-    }
-
-    .red {
-        color: #dc2626;
-    }
-
-    .blue {
-        color: #2563eb
-    }
-
-    .green {
-        color: #16a34a
-    }
-
-    button {
-        border: none;
-        outline: none;
-        background: none;
-        cursor: pointer;
-    }
-
-    .input-button {
-        background-color: #3b82f6;
-        width: 3rem;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0 0.5rem 0.5rem 0;
-    }
-
-    .input-button:hover {
-        background-color: #2563eb;
-    }
-
-    .input-button:active {
-        background-color: #1d4ed8
-    }
-
-    p {
-        text-align: center;
-        line-height: 1.6rem;
-        letter-spacing: 0.5px;
-        color: #222;
-    }
 </style>
 
-<body style="display: flex; justify-content: center;">
+<body class="flex justify-center">
     <div id="app">
-        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 25vh;">
-            <h1>SnailCDN</h1>
-            <h2 style="margin-bottom: 2rem;">The slowest content delivery network</h2>
-            <div class="indicator red" v-if="status == 'invalid-email'"><span
+        <div class="flex flex-col items-center mt-48">
+            <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
+            <h2 class="mb-12 text-stone-500 text-center m-0 text-2xl">The slowest content delivery network</h2>
+
+            <div class="flex items-center w-fit gap-2 min-h-6 text-sm text-red-500" v-if="status == 'invalid-email'"><span
                     class="material-symbols-outlined">info</span>Enter a
                 valid email address</div>
-            <div class="indicator green" v-if="status == 'success'"><span
+            <div class="flex items-center w-fit gap-2 min-h-6 text-sm text-green-500" v-if="status == 'success'"><span
                     class="material-symbols-outlined">check</span>Success!
                 Your website will be delivered in 5-7 business days</div>
-            <div class="indicator" v-if="status == null"></div>
-            <div class="input" style="position: relative">
-                <input placeholder="Enter your email address" v-model="email" spellcheck="false" />
-                <button class="input-button">
-                    <span class="material-symbols-outlined"
-                        style="color: white; font-weight: bold;">arrow_forward</span>
+            <!-- Empty indicator for space consistency -->
+            <div class="min-h-6" v-if="status == null"></div>
+        
+            <div class="relative border border-stone-200 rounded-md bg-white w-full m-2 flex items-center">
+                <input class="border-none outline-none bg-transparent p-4 w-full" placeholder="Enter your email address" v-model="email" spellcheck="false" />
+                <button class="w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700">
+                    <span class="material-symbols-outlined text-white">arrow_forward</span>
                 </button>
             </div>
-            <p style="margin-top: 4rem; max-width: 34rem; ">Have you ever opened a webpage and had it load in under a
+
+            <p class="mt-16 max-w-xl text-center leading-6 text-stone-800">Have you ever opened a webpage and had it
+                load in under a
                 second? It's stressful. Sometimes, <b>it's better to wait</b>.
                 <br><br>
                 That's where SnailCDN comes in.
                 <br><br>
-                Enter your email address above, and browse our vast collection of <b>over 0 million</b> pages. When you've found
+                Enter your email address above, and browse our vast collection of <b>over 0 million</b> pages. When
+                you've found
                 one you like, we'll email it to you in <b>5-7 business days</b>
             </p>
         </div>
