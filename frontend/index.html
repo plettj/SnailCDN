@@ -1,98 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SnailCDN</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://www.iconarchive.com/download/i87602/icons8/ios7/Animals-Snail.ico"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<style type="text/tailwindcss">
+  </head>
+  <style type="text/tailwindcss">
     .material-symbols-outlined {
-        font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
     }
 
     body {
-        font-family: 'Inter', sans-serif;
-        height: 100vh;
-        margin: 0 1.5rem;
-        background-color: #fafaf9;
+      font-family: "Inter", sans-serif;
     }
 
     @layer components {
-        .test {
-            @apply bg-red-500;
-        }
+      .input-status {
+        @apply flex items-center w-fit gap-2 min-h-6 text-sm;
+      }
+      .desc-text {
+        @apply text-stone-800 max-w-xl text-center leading-6;
+      }
     }
-</style>
+  </style>
 
-<body class="flex justify-center">
+  <body class="flex justify-center items-center h-screen my-0 mx-1.5">
     <div id="app">
-        <div class="flex flex-col items-center mt-48">
-            <h1 class="text-5xl font-extrabold m-0 text-center test">SnailCDN</h1>
-            <h2 class="mb-12 text-stone-500 text-center m-0 text-2xl">The slowest content delivery network</h2>
+      <section class="flex flex-col items-center">
+        <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
+        <h2 class="text-stone-500 text-center my-2 mb-6 text-2xl">
+          The slowest content delivery network
+        </h2>
 
-            <div class="flex items-center w-fit gap-2 min-h-6 text-sm text-red-500" v-if="status == 'invalid-email'"><span
-                    class="material-symbols-outlined">info</span>Enter a
-                valid email address</div>
-            <div class="flex items-center w-fit gap-2 min-h-6 text-sm text-green-500" v-if="status == 'success'"><span
-                    class="material-symbols-outlined">check</span>Success!
-                Your website will be delivered in 5-7 business days</div>
-            <!-- Empty indicator for space consistency -->
-            <div class="min-h-6" v-if="status == null"></div>
-        
-            <div class="relative border border-stone-200 rounded-md bg-white w-full m-2 flex items-center">
-                <input class="border-none outline-none bg-transparent p-4 w-full" placeholder="Enter your email address" v-model="email" spellcheck="false" />
-                <button class="w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700">
-                    <span class="material-symbols-outlined text-white">arrow_forward</span>
-                </button>
-            </div>
-
-            <p class="mt-16 max-w-xl text-center leading-6 text-stone-800">Have you ever opened a webpage and had it
-                load in under a
-                second? It's stressful. Sometimes, <b>it's better to wait</b>.
-                <br><br>
-                That's where SnailCDN comes in.
-                <br><br>
-                Enter your email address above, and browse our vast collection of <b>over 0 million</b> pages. When
-                you've found
-                one you like, we'll email it to you in <b>5-7 business days</b>
-            </p>
+        <div class="input-status text-red-600" v-if="status == 'invalid-email'">
+          <span class="material-symbols-outlined">info</span>Enter a valid email
+          address
         </div>
-    </div>
-</body>
+        <div class="input-status text-green-600" v-if="status == 'success'">
+          <span class="material-symbols-outlined">check</span>Success! Your
+          website will be delivered in 5-7 business days
+        </div>
+        <!-- Empty indicator for space consistency -->
+        <div class="min-h-6" v-if="status == null"></div>
 
-<script>
-    const { createApp, ref, computed } = Vue
+        <div
+          class="relative border border-stone-200 mt-2 mb-12 rounded bg-white w-full m-2 flex items-center"
+        >
+          <input
+            class="border-none outline-none bg-transparent px-4 py-2 w-full"
+            placeholder="Enter your email address"
+            v-model="email"
+            spellcheck="false"
+            id="emailInput"
+            @keyup.enter="submitEmail"
+          />
+          <button
+            class="w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
+            @click="submitEmail"
+          >
+            <span class="material-symbols-outlined text-white"
+              >arrow_forward</span
+            >
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <p class="desc-text">
+            Have you ever opened a webpage and had it load in under a second?
+            It's stressful. Sometimes, <b>it's better to wait</b>.
+          </p>
+          <p class="desc-text">That's where SnailCDN comes in.</p>
+          <p class="desc-text">
+            Enter your email address above, and browse our vast collection of
+            <b>over 0 million</b> pages. When you've found one you like, we'll
+            email it to you in <b>5-7 business days</b>
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+
+  <script>
+    const { createApp, ref, computed } = Vue;
 
     createApp({
-        setup() {
-            const email = ref('')
-            const status = computed(() => {
-                if (email.value == '')
-                    return null
+      setup() {
+        const email = ref("");
+        const status = ref(null);
 
-                if (!email.value.match(/(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/))
-                    return 'invalid-email'
+        const validateEmail = (email) => {
+          if (!email) return null;
+          const emailPattern =
+            /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+          return emailPattern.test(email) ? null : "invalid-email";
+        };
 
-                return null
-            })
-            return {
-                email,
-                status
-            }
-        }
-    }).mount('#app')
-</script>
+        const submitEmail = () => {
+          status.value = validateEmail(email.value);
+          if (!status.value || status.value === "invalid-email") {
+            return;
+          }
+          console.log(
+            "Email submitted. Sending to server... (not implemented)"
+          );
+          status.value = "success";
+        };
 
+        return {
+          email,
+          status,
+          submitEmail,
+        };
+      },
+    }).mount("#app");
+  </script>
 </html>
