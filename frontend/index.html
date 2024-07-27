@@ -21,29 +21,31 @@
     />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <style type="text/tailwindcss">
-    .material-symbols-outlined {
-      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
-    }
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
 
-    body {
-      font-family: "Inter", sans-serif;
-    }
+      body {
+        font-family: "Inter", sans-serif;
+      }
 
-    @layer components {
       .input-status {
         @apply flex items-center w-fit gap-2 min-h-6 text-sm;
       }
+
       .desc-text {
         @apply text-stone-800 max-w-xl text-center leading-6;
       }
-    }
-  </style>
 
+      .clickable-item {
+        @apply cursor-pointer bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white;
+      }
+    </style>
+  </head>
   <body class="flex justify-center items-center h-screen my-0 mx-1.5">
     <div id="app">
-      <section class="flex flex-col items-center">
+      <section v-if="currentView === 'home'" class="flex flex-col items-center">
         <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
         <h2 class="text-stone-500 text-center my-2 mb-6 text-2xl">
           The slowest content delivery network
@@ -68,20 +70,17 @@
             placeholder="Enter your email address"
             v-model="email"
             spellcheck="false"
-            id="emailInput"
             @keyup.enter="submitEmail"
           />
           <button
-            class="w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
+            class="clickable-item w-10 absolute top-0 right-0 bottom-0 rounded-r-md flex items-center justify-center"
             @click="submitEmail"
           >
-            <span class="material-symbols-outlined text-white"
-              >arrow_forward</span
-            >
+            <span class="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
 
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 max-w-xl">
           <p class="desc-text">
             Have you ever opened a webpage and had it load in under a second?
             It's stressful. Sometimes, <b>it's better to wait</b>.
@@ -94,41 +93,113 @@
           </p>
         </div>
       </section>
+
+      <section
+        v-if="currentView === 'browse'"
+        class="flex flex-col items-center w-full"
+      >
+        <div class="w-full flex justify-stretch p-4">
+          <button
+            class="clickable-item py-2 px-4 rounded"
+            @click='goToPage("home")'
+          >
+            Back
+          </button>
+          <button class="clickable-item py-2 px-4 rounded">
+            Upload Website
+          </button>
+        </div>
+        <input
+          class="border border-stone-200 rounded mb-4 p-2 w-full"
+          placeholder="Search webpages"
+          v-model="searchQuery"
+        />
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full"
+        >
+          <div
+            v-for="website in filteredWebsites"
+            :key="website.id"
+            class="border p-4 rounded bg-white"
+          >
+            <h3 class="font-bold">{{ website.name }}</h3>
+            <p>{{ website.description }}</p>
+          </div>
+        </div>
+      </section>
     </div>
+
+    <script>
+      const { createApp, ref, computed } = Vue;
+
+      createApp({
+        setup() {
+          const email = ref("");
+          const status = ref(null);
+          const currentView = ref("home");
+          const searchQuery = ref("");
+          const websites = ref([
+            {
+              id: 1,
+              name: "Lebron Jaames",
+              description: "Is the leborn James website",
+            },
+            { id: 2, name: "expitau", description: "PRAISE BEE NATHAN" },
+            {
+              id: 3,
+              name: "Not the moon",
+              description:
+                "This website is not the moon because the moon doesn't exist",
+            },
+          ]);
+
+          /**
+           * Changes the current view to the specified page.
+           * @param {string} page = "home" | "browse"
+           */
+          const goToPage = (page) => {
+            currentView.value = page;
+          };
+
+          const validateEmail = (email) => {
+            if (!email) return null;
+            const emailPattern =
+              /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+            return emailPattern.test(email) ? "success" : "invalid-email";
+          };
+
+          const submitEmail = () => {
+            status.value = validateEmail(email.value);
+            if (status.value !== "success") {
+              return;
+            }
+            status.value = "success";
+            goToPage("browse");
+          };
+
+          const filteredWebsites = computed(() => {
+            if (!searchQuery.value) {
+              return websites.value;
+            }
+            return websites.value.filter((website) =>
+              website.name
+                .toLowerCase()
+                .includes(searchQuery.value.toLowerCase())
+            );
+          });
+
+          return {
+            email,
+            status,
+            submitEmail,
+            currentView,
+            searchQuery,
+            websites,
+            filteredWebsites,
+            goToPage,
+          };
+        },
+      }).mount("#app");
+    </script>
   </body>
-
-  <script>
-    const { createApp, ref, computed } = Vue;
-
-    createApp({
-      setup() {
-        const email = ref("");
-        const status = ref(null);
-
-        const validateEmail = (email) => {
-          if (!email) return null;
-          const emailPattern =
-            /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
-          return emailPattern.test(email) ? null : "invalid-email";
-        };
-
-        const submitEmail = () => {
-          status.value = validateEmail(email.value);
-          if (!status.value || status.value === "invalid-email") {
-            return;
-          }
-          console.log(
-            "Email submitted. Sending to server... (not implemented)"
-          );
-          status.value = "success";
-        };
-
-        return {
-          email,
-          status,
-          submitEmail,
-        };
-      },
-    }).mount("#app");
-  </script>
 </html>
