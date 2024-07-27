@@ -5,6 +5,7 @@ import 'dotenv/config'
 import nodemailer from 'nodemailer'
 import Imap from 'imap'
 import { simpleParser } from 'mailparser'
+import fs from 'fs'
 
 function sendEmail(subject, body) {
     const transporter = nodemailer.createTransport({
@@ -98,12 +99,14 @@ async function fetchEmails() {
     })
 }
 
+
+
 // sendEmail('Hello', 'Hello World')
-fetchEmails().then(emails => {
-    emails.forEach(email => {
-        console.log("-------------------------------------------------------------")
-        console.log(email.from)
-        console.log(email.subject)
-        console.log(email.body)
-    })
-})
+// fetchEmails().then(emails => {
+//     emails.forEach(email => {
+//         console.log("-------------------------------------------------------------")
+//         console.log(email.from)
+//         console.log(email.subject)
+//         console.log(email.body)
+//     })
+// })
