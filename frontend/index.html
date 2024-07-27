@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<style tyle="text/tailwindcss">
+<style type="text/tailwindcss">
     .material-symbols-outlined {
         font-variation-settings:
             'FILL' 0,
@@ -28,12 +28,18 @@
         margin: 0 1.5rem;
         background-color: #fafaf9;
     }
+
+    @layer components {
+        .test {
+            @apply bg-red-500;
+        }
+    }
 </style>
 
 <body class="flex justify-center">
     <div id="app">
         <div class="flex flex-col items-center mt-48">
-            <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
+            <h1 class="text-5xl font-extrabold m-0 text-center test">SnailCDN</h1>
             <h2 class="mb-12 text-stone-500 text-center m-0 text-2xl">The slowest content delivery network</h2>
 
             <div class="flex items-center w-fit gap-2 min-h-6 text-sm text-red-500" v-if="status == 'invalid-email'"><span
