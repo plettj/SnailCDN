@@ -53,114 +53,145 @@
       animation-iteration-count: 1;
       /* Repeat the animation infinitely */
     }
+
+    input[type="file"]::file-selector-button {
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      cursor: pointer;
+      margin-right: 0.5rem;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background-color: #f5f5f4;
+    }
   </style>
 </head>
 
 <body class="w-screen h-screen relative bg-stone-50 overflow-hidden">
   <div id="app" class="">
-    <!-- Home section -->
-    <section class="absolute inset-0 flex flex-col items-center transition-all duration-700 pt-64"
-      :class="{[page < PAGE_HOME ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0']: page != PAGE_HOME, 'delay-300': last_page != PAGE_HOME}">
-      <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
-      <h2 class="text-stone-500 text-center my-2 mb-6 text-2xl">
-        The slowest content delivery network
-      </h2>
+    <div v-if="!contentKey">
 
-      <div id="email-indicator" class="flex items-center w-fit gap-2 min-h-6 text-sm text-red-600 shake"
-        v-if="status == STATUS_INVALID_EMAIL">
-        <span class="material-symbols-outlined">info</span>Enter a valid email
-        address
-      </div>
+      <!-- Home section -->
+      <section class="absolute inset-0 flex flex-col items-center transition-all duration-700 pt-64"
+        :class="{[page < PAGE_HOME ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0']: page != PAGE_HOME, 'delay-300': last_page != PAGE_HOME}">
+        <h1 class="text-5xl font-extrabold m-0 text-center">SnailCDN</h1>
+        <h2 class="text-stone-500 text-center my-2 mb-6 text-2xl">
+          The slowest content delivery network
+        </h2>
 
-      <!-- Empty indicator for space consistency -->
-      <div class="min-h-6" v-if="status == STATUS_NONE"></div>
+        <div id="email-indicator" class="flex items-center w-fit gap-2 min-h-6 text-sm text-red-600 shake"
+          v-if="status == STATUS_INVALID_EMAIL">
+          <span class="material-symbols-outlined">info</span>Enter a valid email
+          address
+        </div>
 
-      <div
-        class="relative border border-stone-200 mx-2 mt-2 mb-12 rounded-lg bg-white w-full max-w-2xl flex items-center">
-        <input class="border-none outline-none bg-transparent w-full px-4 py-2" placeholder="Enter your email address"
-          v-model="email" spellcheck="false" @keydown.enter="submitEmail" />
-        <button
-          class="cursor-pointer bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white w-10 absolute top-0 right-0 bottom-0 rounded-r-lg flex items-center justify-center"
-          @click="submitEmail">
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </button>
-      </div>
+        <!-- Empty indicator for space consistency -->
+        <div class="min-h-6" v-if="status == STATUS_NONE"></div>
 
-      <div class="text-stone-800 max-w-xl text-center">
-        Have you ever opened a webpage and had it load in under a second?
-        It's stressful. Sometimes, <b>it's better to wait</b>.
-        <br><br>
-        Enter your email address above, and browse our vast collection of
-        <b>over 0 million</b> pages. When you've found one you like, we'll
-        email it to you in <b>5-7 business days</b>
-      </div>
-    </section>
-
-    <!-- Browse section -->
-    <section class="absolute inset-0 flex flex-col items-center transition-all duration-700 pt-64"
-      :class="{[page < PAGE_BROWSE ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0']: page != PAGE_BROWSE, 'delay-300': last_page != PAGE_BROWSE}">
-      <button class="cursor-pointer border flex items-center bg-transparent border-none absolute top-6 left-6 gap-4"
-        @click='navigate(PAGE_HOME)'>
-        <span class="material-symbols-outlined">arrow_back</span>
-        Back
-      </button>
-
-      <h1 class="text-3xl font-extrabold text-center">{{email}}</h1>
-      <h3 class="mt-2 flex items-center gap-2">
-        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse duration-500"></div>No active requests
-      </h3>
-      <div class="flex items-center gap-16 mt-12 relative w-full max-w-2xl flex-row-reverse h-12">
         <div
-          class="absolute left-0 border border-stone-200 rounded-lg bg-white flex items-center transition-all duration-500 z-10"
-          :class="{[isSearchActive ? 'w-full' : 'w-96']: true}">
-          <span class="material-symbols-outlined text-stone-500 pl-4">search</span>
-          <input class="border-none outline-none bg-transparent w-full px-4 py-2" placeholder="Search for a website"
-            v-model="searchQuery" spellcheck="false" @focus="isSearchActive = true" @blur="isSearchActive = searchQuery != ''" />
+          class="relative border border-stone-200 mx-2 mt-2 mb-12 rounded-lg bg-white w-full max-w-[36rem] flex items-center">
+          <input class="border-none outline-none bg-transparent w-full px-4 py-2" placeholder="Enter your email address"
+            v-model="email" spellcheck="false" @keydown.enter="submitEmail" />
+          <button
+            class="cursor-pointer bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white w-10 absolute top-0 right-0 bottom-0 rounded-r-lg flex items-center justify-center"
+            @click="submitEmail">
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
         </div>
-        <button
-          class="cursor-pointer border bg-white font-bold py-2 px-4 rounded text-nowrap transition-all duration-500"
-          @click='navigate(PAGE_SUBMIT)' :class="{'opacity-0': isSearchActive}">
-          Submit your own
-        </button>
-        <span class="text-sm font-bold transition-all duration-500" :class="{'opacity-0': isSearchActive}">OR</span>
-      </div>
-      <div class="relative w-full max-w-2xl">
-        <div class="flex flex-col items-center mt-16 transition-all duration-500"
-          :class="{'opacity-0': isSearchActive}">
-          <div class="font-bold mb-2">Popular sites</div>
-          <a class="text-blue-500 underline text-sm cursor-pointer" v-for="website in popularWebsites"
-            :key="website.name">{{
-            website.name
-            }}</a>
-        </div>
-        <div class="flex flex-col absolute top-0 left-0 duration-500 gap-2 w-full mt-4 tansition-all z-10" :class="{'opacity-0 translate-x-full': !isSearchActive}">
-          <div v-for="website in filteredWebsites" class="rounded-lg p-4 bg-white text-nowrap border-stone-200 border-2 flex items-center">{{website.name}}<button class="material-symbols-outlined absolute right-4 p-1 border rounded transition-colors border-stone-200 cursor-pointer hover:bg-blue-500 hover:text-white hover:border-transparent hover:drop-shadow active:bg-blue-600">outgoing_mail</button></div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Upload section -->
-    <section class="absolute inset-0 flex flex-col items-center transition-all duration-700 pt-64"
-    :class="{[page < PAGE_SUBMIT ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0']: page != PAGE_SUBMIT, 'delay-300': last_page != PAGE_SUBMIT}">
-      <button
-        class="self-start cursor-pointer border border-stone-200 bg-white hover:bg-stone-100 active:bg-stone-200 text-black py-2 px-4 rounded"
-        @click='navigate(PAGE_BROWSE)'>
-        Back
-      </button>
-      <input class="border border-stone-200 rounded w-full px-4 py-2 outline-none bg-transparent"
-        placeholder="Enter your website name" v-model="siteName" />
-      <input type="file" @change="onFileChanged($event)" accept=".html"
-        class="border border-stone-200 rounded w-full px-4 py-2 outline-none bg-transparent mt-2" capture />
-      <a class="cursor-pointer border border-stone-200 bg-white hover:bg-stone-100 active:bg-stone-200 text-black py-2 px-4 rounded mt-2"
-        @click="uploadWebsite()"
-        :href="`mailto:snailcdn@expitau.com?body=${siteFileBody}&subject=sneakyhash-${siteName}`">
-        Upload
-      </a>
-    </section>
+        <div class="text-stone-800 max-w-[30rem] text-center">
+          Have you ever opened a webpage and had it load in under a second?
+          It's stressful. Sometimes, <b>it's better to wait</b>.
+          <br><br>
+          Enter your email address above, and browse our vast collection of
+          <b>over 0 million</b> pages. When you've found one you like, we'll
+          email it to you in <b>5-7 business days</b>
+        </div>
+      </section>
+
+      <!-- Browse section -->
+      <section class="absolute inset-0 flex flex-col items-center transition-all duration-700 pt-64"
+        :class="{[page < PAGE_BROWSE ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0']: page != PAGE_BROWSE, 'delay-300': last_page != PAGE_BROWSE}">
+        <button class="cursor-pointer border flex items-center bg-transparent border-none absolute top-6 left-6 gap-4"
+          @click='navigate(PAGE_HOME)'>
+          <span class="material-symbols-outlined">arrow_back</span>
+          Back
+        </button>
+
+        <h1 class="text-3xl font-extrabold text-center">{{email}}</h1>
+        <h3 class="mt-2 flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full animate-pulse duration-500"
+            :class="{[requests.length == 0 ? 'bg-red-500' : 'bg-green-500']: true}"></div>
+          {{requests.length == 0 ? "No active requests" : `${requests.length} active request${requests.length > 1 ? 's'
+          : ''}`}}
+        </h3>
+        <div class="flex items-center gap-16 mt-12 relative w-full max-w-2xl flex-row-reverse h-12">
+          <div
+            class="absolute left-0 border border-stone-200 rounded-lg bg-white flex items-center transition-all duration-500 z-10"
+            :class="{[isSearchActive ? 'w-full' : 'w-96']: true}">
+            <span class="material-symbols-outlined text-stone-500 pl-4">search</span>
+            <input class="border-none outline-none bg-transparent w-full px-4 py-2" placeholder="Search for a website"
+              v-model="searchQuery" spellcheck="false" />
+          </div>
+          <button
+            class="cursor-pointer border bg-white font-bold py-2 px-4 rounded text-nowrap transition-all duration-500"
+            @click='navigate(PAGE_SUBMIT)' :class="{'opacity-0': isSearchActive}">
+            Submit your own
+          </button>
+          <span class="text-sm font-bold transition-all duration-500" :class="{'opacity-0': isSearchActive}">OR</span>
+        </div>
+        <div class="relative w-full max-w-2xl">
+          <div class="flex flex-col items-center mt-16 transition-all duration-500"
+            :class="{'opacity-0': isSearchActive}">
+            <div class="font-bold mb-2">Popular sites</div>
+            <a class="text-blue-500 underline text-sm cursor-pointer" v-for="website in popularWebsites" :key="website"
+              @click="searchQuery = website">{{
+              website
+              }}</a>
+          </div>
+          <div class="flex flex-col absolute top-0 left-0 duration-500 gap-2 w-full mt-4 tansition-all z-10"
+            :class="{'opacity-0 translate-x-full': !isSearchActive}">
+            <div v-for="website in filteredWebsites"
+              class="rounded-lg p-4 bg-white text-nowrap border-stone-200 border-2 flex items-center">
+              {{website}}
+              <button
+                class="material-symbols-outlined absolute right-4 p-1 border rounded transition-colors border-stone-200 cursor-pointer hover:bg-blue-500 hover:text-white hover:border-transparent hover:drop-shadow active:bg-blue-600"
+                v-if="!requests.includes(website)" @click="() => subscribeTo(website)">outgoing_mail</button>
+              <div v-else></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload section -->
+      <section class="absolute inset-0 flex flex-col items-center transition-all duration-700 pt-64"
+        :class="{[page < PAGE_SUBMIT ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0']: page != PAGE_SUBMIT, 'delay-300': last_page != PAGE_SUBMIT}">
+
+        <button class="cursor-pointer border flex items-center bg-transparent border-none absolute top-6 left-6 gap-4"
+          @click='navigate(PAGE_BROWSE)'>
+          <span class="material-symbols-outlined">arrow_back</span>
+          Back
+        </button>
+        <input class="border border-stone-200 bg-white rounded-lg text-center px-4 py-2 outline-none bg-transparent"
+          placeholder="Enter your website name" v-model="siteName" />
+        <input type="file" @change="onFileChanged($event)" class="w-56 m-4 text-center" capture />
+        <a class="cursor-pointer border border-stone-200 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white py-2 px-4 rounded mt-2"
+          @click="uploadWebsite()" :href="">
+          Submit
+        </a>
+      </section>
+    </div>
+    <div v-else>
+      {{content}}
+    </div>
   </div>
 
   <script>
     const { createApp, ref, computed } = Vue;
+
+    const BACKEND_URL = 'http://localhost:3000/api'
 
     const STATUS_NONE = 0;
     const STATUS_INVALID_EMAIL = 1;
@@ -172,31 +203,49 @@
 
     createApp({
       setup() {
-        const email = ref("");
+        const contentKey = new URLSearchParams((new URL(window.location.href)).search).get('key')
+        const content = ref("Loading...")
+        contentKey && fetch(`${BACKEND_URL}/visit/${contentKey}`).then((res) => res.json()).then((text) => content.value = text)
+        const email = ref("expitau@gmail.com");
         const status = ref(STATUS_NONE);
-        const page = ref(PAGE_HOME);
+        const page = ref(PAGE_BROWSE);
         const last_page = ref(null)
 
-        const isSearchActive = ref(false)
         const searchQuery = ref("");
+        const isSearchActive = computed(() => searchQuery.value.length > 0);
         const siteName = ref("");
         const siteFile = ref(null);
-        const siteFileBody = ref(null);
-        const websites = ref([
-          {
-            id: 1,
-            name: "Lebron Jaames",
-            description: "Is the leborn James website",
-          },
-          { id: 2, name: "expitau", description: "PRAISE BEE NATHAN" },
-          {
-            id: 3,
-            name: "Not the moon",
-            description:
-              "This website is not the moon because the moon doesn't exist",
-          },
-        ]);
+        const siteFileBody = computed(() => {
+          return encodeURIComponent(`Hi my websites name is '${siteName.value}' and I would like you to please upload it thank you :)`);
+        });
+        const websites = ref([]);
         const popularWebsites = computed(() => websites.value.slice(0, 3));
+        const requests = ref([])
+
+        function refreshRequests(email) {
+          fetch(`${BACKEND_URL}/subscriptions?email=${email}`).then((res) => { if (res.ok) {return res.json()} else { return [] }}).then((data) => { requests.value = data; console.log(data) })
+        }
+        function refreshContent() {
+          fetch(`${BACKEND_URL}/content`).then((res) => res.json()).then((json) => websites.value = json)
+        }
+        function subscribeTo(website) {
+          fetch(`${BACKEND_URL}/subscribe`, {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email.value, key: website })
+          }).then(() => {
+            refreshRequests(email.value)
+          })
+        }
+        setInterval(() => {
+          refreshRequests(email.value)
+          refreshContent()
+        }, 5000)
+        refreshRequests(email.value)
+        refreshContent()
 
         const validateEmail = (email) => {
           if (!email) return false;
@@ -238,16 +287,21 @@
 
         const uploadWebsite = () => {
           if (!siteName.value || !siteFile.value) {
-            console.warn("Missing website name or file.");
+            alert("Missing website name or file.");
             return;
           }
-          console.log(
-            "Uploading website",
-            siteName.value,
-            siteFile.value,
-            email.value
-          );
-          console.warn("Not implemented. Need to make RPC call.");
+          siteFile.value.text().then((content) => {
+            fetch(`${BACKEND_URL}/upload`, {
+              method: "POST",
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ key: siteName.value, content: content })
+            }).then(() => {
+              window.location.href = `mailto:snailcdn@expitau.com?body=${siteName.value}&subject=Please upload my website`
+            });
+          })
         };
 
         const onFileChanged = ($event) => {
@@ -264,19 +318,15 @@
           }
 
           return websites.value.filter((website) =>
-            website.name
+            website
               .toLowerCase()
               .includes(searchQuery.value.toLowerCase())
           );
         });
 
-        const fetchWebsiteBody = () => {
-          siteFile.value.text().then((content) => {
-            siteFileBody.value = encodeURIComponent(content);
-          });
-        };
-
         return {
+          contentKey,
+          content,
           STATUS_INVALID_EMAIL,
           STATUS_NONE,
           STATUS_SUCCESS,
@@ -296,7 +346,9 @@
           onFileChanged,
           uploadWebsite,
           siteFileBody,
-          siteName
+          siteName,
+          requests,
+          subscribeTo
         };
       },
     }).mount("#app");

@@ -1,126 +1,208 @@
-import jayson from 'jayson'
-import fs from 'fs'
-import { sendEmail, fetchEmails } from './email.js'
+import express from 'express';
+import fs from 'fs';
+import { sendEmail, fetchEmails } from './email.js';
+import crypto from 'crypto';
+import path from 'path'
+import cors from 'cors'
+import { fileURLToPath } from 'url';
 
+const FRONTEND_URL = `http://localhost:5500/`
 // Read from data.json file
 function readData() {
-    let data
+    let data;
     try {
-        data = JSON.parse(fs.readFileSync('backend/data.json'))
+        data = JSON.parse(fs.readFileSync('backend/data.json'));
     } catch (e) {
         data = {
-            requests: [
-                // {
-                //     key: ['website1', 'website2'],
-                //     email: 'requestee@gmail.com',
-                //     requestedAt: '2024-07-25T00:00:00.000Z'
-                // }
-            ],
-            content: [
-                // {
-                //     key: "website1",
-                //     content: "This is the content of website1",
-                // }
-            ]
-        }
+            requests: [],
+            content: []
+        };
         if (e.code === 'ENOENT') {
-            writeData(data)
+            writeData(data);
         }
     }
-    return data
+    return data;
 }
 
 function writeData(data) {
-    fs.writeFileSync('backend/data.json', JSON.stringify(data))
+    fs.writeFileSync('backend/data.json', JSON.stringify(data));
 }
 
-function addToQueue(request) {
-    let data = readData()
-    data.requests.push(request)
+function encodeBase64(input) {
+    return Buffer.from(input).toString('base64');
+}
 
-    data.requests = Object.values(data.requests.reduce((acc, curr) => {
-        // If there are multiple requests from the same email, combine them
-        acc[curr.email] ??= { key: [], email: curr.email, requestedAt: curr.requestedAt }
-        acc[curr.email].key = Array.from(new Set([...acc[curr.email].key, ...curr.key]))
-        if (acc[curr.email].requestedAt > curr.requestedAt) {
-            acc[curr.email].requestedAt = curr.requestedAt
-        }
-        return acc
-    }, {}))
-    writeData(data)
+function decodeBase64(input) {
+    if (input == undefined) return undefined;
+    return Buffer.from(input, 'base64').toString('utf-8');
+}
+
+function sha256(input) {
+    return crypto.createHash('sha256').update(input).digest('hex');
 }
 
 function pollEmails() {
-    console.log("Polling...")
+    console.log("Polling...");
     fetchEmails().then(emails => {
-        let data = readData()
+        let data = readData();
         data.content = emails.map((email) => {
             return {
                 key: email.subject,
                 content: email.body,
-            }
-        })
-        writeData(data)
-    })
+            };
+        });
+        writeData(data);
+    });
 }
 
 function sendEmails() {
-    console.log("Sending emails...")
-    let data = readData()
+    console.log("Sending emails...");
+    let data = readData();
     data.requests.forEach((request) => {
         // If the request was made under 5 minutes ago, don't send the email
-        if (request.requestedAt + 5 * 60 * 1000 > new Date()) return
+        if (new Date(request.requestedAt).valueOf() + 5 * 60 * 1000 > new Date().valueOf()) return;
 
-        console.log(request)
-        let contents = data.content.filter((c) => request.key.includes(c.key))
-        console.log("FOUND CONTENTS", contents)
-        for (let content of contents) {
-            console.log("Sending email to", request.email)
-            sendEmail(request.email, "Your website is ready!", content.content)
-        }
-    })
-    data.requests = data.requests.filter((request) => request.requestedAt + 5 * 60 * 1000 > new Date())
-    writeData(data)
+
+        console.log(request);
+        let responseLinks = request.key.filter((key) => data.content.some(c => c.key == key)).map((key) => {
+            return `${FRONTEND_URL}/?key=${sha256(key)}`;
+        }).join('\n')
+        let response = `Your SnailCDN content is ready! Here are your access links (only available 9am-5pm on business days):
+${responseLinks}
+
+Thank you for using SnailCDN!
+
+Love and kisses,
+SnailCDN xoxo <3
+        `;
+        console.log("Sending email to", request.email);
+        sendEmail(request.email, "Your content is ready!", response);
+    });
+    data.requests = data.requests.filter((request) => new Date(request.requestedAt).valueOf() + 5 * 60 * 1000 > new Date().valueOf());
+    writeData(data);
 }
-
-setInterval(pollEmails, 30000)
-setInterval(sendEmails, 5000)
 
 function normalizeEmail(email) {
-    return email.replace(/^\s*/g, '').replace(/\s*$/g, '')
+    return email.replace(/^\s*/g, '').replace(/\s*$/g, '');
 }
 
-const methods = {
-    browseContent: (args, callback) => {
-        let data = readData()
-        console.log(data)
-        if (args && args[0]) {
-            callback(null, data.content.filter((c) => c.content.includes(args[0])))
-        } else {
-            callback(null, data.content)
-        }
-    },
-    addRequest: (args, callback) => {
-        if (!args) {
-            callback({ code: 400, message: 'Arguments are required' })
-            return
-        }
-        if (!args[0]) {
-            callback({ code: 400, message: 'Key is required' })
-            return
-        }
-        if (!args[1]) {
-            callback({ code: 400, message: 'Email is required' })
-            return
-        }
+const app = express();
+app.use(express.json()) 
+app.use(cors());
 
-        addToQueue({ key: [args[0]], email: normalizeEmail(args[1]), requestedAt: new Date() })
-        callback(null, 'Request received')
+app.get('/api/content', (req, res) => {
+    let data = readData();
+    const query = req.query.q;
+    let content = data.content
+    if (query) {
+        content = data.content.filter((c) => c.content.includes(query))
     }
-}
+    res.json(content.map(c => c.key));
+});
 
-const server = new jayson.server(methods)
+app.post('/api/subscribe', (req, res) => {
+    console.log(req.body)
+    const { key, email } = req.body;
+    if (!key) {
+        res.status(400).json('Key is required');
+        return;
+    }
+    if (!email) {
+        res.status(400).json('Email is required');
+        return;
+    }
 
-server.http().listen(3000, () => {
-    console.log('JSON-RPC server started on http://localhost:3000')
+    let data = readData();
+    data.requests.push({ key: [key], email: normalizeEmail(email), requestedAt: new Date() });
+
+    // If there are multiple requests from the same email, combine them
+    data.requests = Object.values(data.requests.reduce((acc, curr) => {
+        acc[curr.email] ??= { key: [], email: curr.email, requestedAt: curr.requestedAt };
+        acc[curr.email].key = Array.from(new Set([...acc[curr.email].key, ...curr.key]));
+        if (acc[curr.email].requestedAt > curr.requestedAt) {
+            acc[curr.email].requestedAt = curr.requestedAt;
+        }
+        return acc;
+    }, {}));
+
+    writeData(data);
+    res.json('Request received');
+});
+
+app.get('/api/subscriptions', (req, res) => {
+    const { email } = req.query;
+    if (!email) {
+        res.status(400).json('Email is required');
+        return;
+    }
+
+    let data = readData();
+    let requests = data.requests.filter((r) => r.email === normalizeEmail(email));
+    if (requests.length === 0) {
+        res.status(404).json('No requests found');
+        return;
+    }
+    res.json(requests[0].key);
 })
+
+app.post('/api/upload', (req, res) => {
+    const { key, content } = req.body;
+    if (!key) {
+        res.status(400).json('Key is required');
+        return;
+    }
+    if (!content) {
+        res.status(400).json('Content is required');
+        return;
+    }
+
+    let data = readData();
+    data.content = data.content.filter(c => c.key !== key);
+    data.content.push({ key: key, content: encodeBase64(content) });
+    writeData(data);
+    res.json('Content uploaded');
+});
+
+app.get('/api/visit/:key', (req, res) => {
+    const key = req.params.key;
+    if (!key || key.length < 2) {
+        res.status(400).json('Key is required');
+        return;
+    }
+
+    let data = readData();
+    let page = decodeBase64(data.content.filter((c) => sha256(c.key).startsWith(key))[0]?.content)
+    if (!page) {
+        res.status(404).json('Page not found');
+        return;
+    }
+
+    // Get current time, see if is between 9am and 5pm on a business day
+    const now = new Date();
+    // if (now.getDay() == 0 || now.getDay() == 6 || now.getHours() < 9 || now.getHours() >= 17) {
+    //     res.status(451).json("Sorry, you can only access this content between 9am and 5pm on business days");
+    //     return
+    // }
+
+    res.json(page);
+});
+
+app.get('/api', (req, res) => {
+    res.status(404).json('Not found');
+});
+
+app.get('/api/*', (req, res) => {
+    res.status(404).json('Not found');
+});
+
+// Send all requests to the index.html
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../frontend', 'index.html'));
+// });
+
+// setInterval(pollEmails, 30000);
+setInterval(sendEmails, 10000);
+
+app.listen(3000, () => {
+    console.log('REST API server started on http://localhost:3000');
+});

@@ -1,4 +1,8 @@
 {
   "css.lint.unknownAtRules": "ignore",
-  "cSpell.words": ["opsz", "wght"]
+  "cSpell.words": [
+    "opsz",
+    "wght"
+  ],
+  "liveServer.settings.multiRootWorkspaceName": "SnailCDN"
 }
