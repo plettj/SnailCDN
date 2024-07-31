@@ -206,9 +206,9 @@
         const contentKey = new URLSearchParams((new URL(window.location.href)).search).get('key')
         const content = ref("Loading...")
         contentKey && fetch(`${BACKEND_URL}/visit/${contentKey}`).then((res) => res.json()).then((text) => content.value = text)
-        const email = ref("expitau@gmail.com");
+        const email = ref("");
         const status = ref(STATUS_NONE);
-        const page = ref(PAGE_BROWSE);
+        const page = ref(PAGE_HOME);
         const last_page = ref(null)
 
         const searchQuery = ref("");
