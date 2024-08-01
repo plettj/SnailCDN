@@ -6,12 +6,13 @@ import path from 'path'
 import cors from 'cors'
 import { fileURLToPath } from 'url';
 
-const FRONTEND_URL = `http://localhost:5500/`
+const FRONTEND_URL = `http://expitau.com/SnailCDN`
+const DATA_PATH = 'data/data.json'
 // Read from data.json file
 function readData() {
     let data;
     try {
-        data = JSON.parse(fs.readFileSync('backend/data.json'));
+        data = JSON.parse(fs.readFileSync(DATA_PATH));
     } catch (e) {
         data = {
             requests: [],
@@ -25,7 +26,7 @@ function readData() {
 }
 
 function writeData(data) {
-    fs.writeFileSync('backend/data.json', JSON.stringify(data));
+    fs.writeFileSync(DATA_PATH, JSON.stringify(data));
 }
 
 function encodeBase64(input) {
@@ -91,6 +92,7 @@ app.use(express.json())
 app.use(cors());
 
 app.get('/api/content', (req, res) => {
+    console.log("API CONTENT")
     let data = readData();
     const query = req.query.q;
     let content = data.content
