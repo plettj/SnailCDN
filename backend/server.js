@@ -60,8 +60,8 @@ function sendEmails() {
     console.log("Sending emails...");
     let data = readData();
     data.requests.forEach((request) => {
-        // If the request was made under 5 minutes ago, don't send the email
-        if (new Date(request.requestedAt).valueOf() + 5 * 60 * 1000 > new Date().valueOf()) return;
+        // If the request was made under 7 days ago, don't send the email
+        if (new Date(request.requestedAt).valueOf() + 7 * 24 * 60 * 60 * 1000 > new Date().valueOf()) return;
 
 
         console.log(request);
