@@ -203,7 +203,7 @@ app.get('/api/*', (req, res) => {
 // });
 
 // setInterval(pollEmails, 30000);
-setInterval(sendEmails, 10000);
+setInterval(sendEmails, 60000);
 
 app.listen(3000, () => {
     console.log('REST API server started on http://localhost:3000');
